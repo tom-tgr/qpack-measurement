@@ -82,7 +82,13 @@ public sealed class Scenarios(int port, Version version, bool quick)
     private async Task SendAsync(HttpClient client, Variant variant)
     {
         var path = $"/r?s={variant.ResponseHeaderBytes}";
-        using var request = new HttpRequestMessage(HttpMethod.Post, path) { Content = new ByteArrayContent(RequestBody) };
+        // DefaultRequestVersion only applies to HttpClient's helper methods, not to SendAsync with our own message.
+        using var request = new HttpRequestMessage(HttpMethod.Post, path)
+        {
+            Content = new ByteArrayContent(RequestBody),
+            Version = version,
+            VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+        };
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/grpc");
         request.Headers.TryAddWithoutValidation(HeaderSizer.PadName, new string('a', RequestPad(path, variant.RequestHeaderBytes)));
         using var response = await client.SendAsync(request);
