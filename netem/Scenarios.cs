@@ -14,18 +14,30 @@ public sealed class Scenarios(int port, Version version, bool quick)
     private static readonly byte[] RequestBody = new byte[RequestBodyBytes];
     private string Authority => $"127.0.0.1:{port}";
 
-    // Responses stay unpadded (Kestrel's own ~74 bytes) in the API scenarios: gRPC responses are tiny anyway.
-    public static readonly Variant[] Api =
+    // Responses stay unpadded (Kestrel's own ~74 bytes) in the gRPC scenarios: gRPC responses are tiny anyway.
+    // Warm connection: per-connection averages from measure.py (safe mode works once acknowledgements flow).
+    public static readonly Variant[] ApiWarm =
     [
         new(".NET today", 1502, 0),
         new("dynamic, auth not indexed", 1306, 0),
         new("dynamic, auth indexed", 119, 0),
     ];
 
-    public static readonly Variant[] Page =
+    // Cold burst on a new connection: the first 50/100 lists, all sent before any acknowledgement returns
+    // (README "cold bursts"). Safe mode cannot reference anything yet; blocking mode (ls-qpack, 100 blocked
+    // streams, as Chrome allows) references entries inserted earlier in the same burst.
+    public static readonly Variant[] ApiCold =
     [
-        new(".NET today", 511, 745),
-        new("dynamic table", 203, 213),
+        new(".NET today", 1502, 0),
+        new("dynamic, safe mode", 1533, 0),
+        new("dynamic, blocking allowed", 102, 0),
+    ];
+
+    public static readonly Variant[] PageCold =
+    [
+        new(".NET today", 443, 799),
+        new("dynamic, safe mode", 437, 809),
+        new("dynamic, blocking allowed", 124, 175),
     ];
 
     // One request at a time on a warm connection (a unary call in a chatty client).
@@ -48,6 +60,39 @@ public sealed class Scenarios(int port, Version version, bool quick)
             {
                 var started = Stopwatch.GetTimestamp();
                 await SendAsync(clients[v], variants[v]);
+                timings[v].Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            }
+        }
+
+        foreach (var client in clients)
+        {
+            client.Dispose();
+        }
+
+        return Summarize(scenario, variants, timings);
+    }
+
+    // `concurrency` requests at once on a connection that is already warm (grown congestion window),
+    // e.g. a fan-out of RPCs over a long-lived gRPC channel.
+    public async Task<List<Result>> WarmBurstAsync(string scenario, Variant[] variants, int concurrency)
+    {
+        var repetitions = quick ? 3 : 10;
+        var clients = variants.Select(_ => CreateClient()).ToArray();
+        for (var v = 0; v < variants.Length; v++)
+        {
+            for (var i = 0; i < 2; i++) // warm-up bursts grow the congestion window
+            {
+                await Task.WhenAll(Enumerable.Range(0, concurrency).Select(_ => SendAsync(clients[v], variants[v])));
+            }
+        }
+
+        var timings = variants.Select(_ => new List<double>()).ToArray();
+        for (var r = 0; r < repetitions; r++)
+        {
+            for (var v = 0; v < variants.Length; v++)
+            {
+                var started = Stopwatch.GetTimestamp();
+                await Task.WhenAll(Enumerable.Range(0, concurrency).Select(_ => SendAsync(clients[v], variants[v])));
                 timings[v].Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
             }
         }

@@ -21,9 +21,10 @@ await using var server = await TestServer.StartAsync(Port, http3: !smoke);
 var scenarios = new Scenarios(Port, smoke ? HttpVersion.Version11 : HttpVersion.Version30, quick);
 
 var results = new List<Result>();
-results.AddRange(await scenarios.SequentialAsync("gRPC unary, sequential", Scenarios.Api));
-results.AddRange(await scenarios.BurstAsync("gRPC fan-out, 50 concurrent, new connection", Scenarios.Api, 50));
-results.AddRange(await scenarios.BurstAsync("page load, 100 concurrent, new connection", Scenarios.Page, 100));
+results.AddRange(await scenarios.SequentialAsync("gRPC unary, sequential, warm connection", Scenarios.ApiWarm));
+results.AddRange(await scenarios.WarmBurstAsync("gRPC fan-out, 50 concurrent, warm connection", Scenarios.ApiWarm, 50));
+results.AddRange(await scenarios.BurstAsync("gRPC fan-out, 50 concurrent, new connection", Scenarios.ApiCold, 50));
+results.AddRange(await scenarios.BurstAsync("page load, 100 concurrent, new connection", Scenarios.PageCold, 100));
 
 var lines = new List<string> { $"### {profile}{(smoke ? " (HTTP/1.1 smoke test, not HTTP/3)" : "")}", "",
     "| Scenario | Variant | Request header bytes | Response header bytes | Median ms | p90 ms | Median vs today |",
