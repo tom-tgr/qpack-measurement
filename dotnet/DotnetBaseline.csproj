@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Compiles .NET's own shared QPACK encoder source (see ../dotnet-src/SOURCE.txt) so the
+       ".NET today" numbers come from the real encoder, not a re-implementation. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS8632;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../dotnet-src/QPackEncoder.cs" />
+    <Compile Include="../dotnet-src/QPackEncodingException.cs" />
+    <Compile Include="../dotnet-src/H3StaticTable.cs" />
+    <Compile Include="../dotnet-src/H3StaticTable.Http3.cs" />
+    <Compile Include="../dotnet-src/HeaderField.cs" />
+    <Compile Include="../dotnet-src/IntegerEncoder.cs" />
+  </ItemGroup>
+
+</Project>

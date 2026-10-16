@@ -1,0 +1,184 @@
+{
+  "settings": {
+    "blocked_streams": 0,
+    "ack_delay": 0,
+    "json": "results-safe-ackdelay0.json"
+  },
+  "results": [
+    {
+      "workload": "Facebook page load: requests",
+      "file": "fb-req.qif",
+      "lists": 383,
+      "dotnet": {
+        "bytes": 195668,
+        "decoder_stream": 0
+      },
+      "static+huff": {
+        "bytes": 145888,
+        "decoder_stream": 0
+      },
+      "dyn-4k": {
+        "bytes": 54550,
+        "decoder_stream": 1088
+      },
+      "dyn-16k": {
+        "bytes": 54055,
+        "decoder_stream": 1085
+      },
+      "dyn-64k": {
+        "bytes": 52920,
+        "decoder_stream": 1107
+      }
+    },
+    {
+      "workload": "Facebook page load: responses",
+      "file": "fb-resp.qif",
+      "lists": 383,
+      "dotnet": {
+        "bytes": 285267,
+        "decoder_stream": 0
+      },
+      "static+huff": {
+        "bytes": 209773,
+        "decoder_stream": 0
+      },
+      "dyn-4k": {
+        "bytes": 59008,
+        "decoder_stream": 1118
+      },
+      "dyn-16k": {
+        "bytes": 55883,
+        "decoder_stream": 1096
+      },
+      "dyn-64k": {
+        "bytes": 55269,
+        "decoder_stream": 1112
+      }
+    },
+    {
+      "workload": "netbsd.org page load (mixed)",
+      "file": "netbsd.qif",
+      "lists": 18,
+      "dotnet": {
+        "bytes": 4416,
+        "decoder_stream": 0
+      },
+      "static+huff": {
+        "bytes": 3258,
+        "decoder_stream": 0
+      },
+      "dyn-4k": {
+        "bytes": 1151,
+        "decoder_stream": 18
+      },
+      "dyn-16k": {
+        "bytes": 1151,
+        "decoder_stream": 18
+      },
+      "dyn-64k": {
+        "bytes": 1152,
+        "decoder_stream": 18
+      }
+    },
+    {
+      "workload": "gRPC unary calls: requests",
+      "file": "grpc-req.qif",
+      "lists": 500,
+      "dotnet": {
+        "bytes": 751182,
+        "decoder_stream": 0
+      },
+      "static+huff": {
+        "bytes": 591237,
+        "decoder_stream": 0
+      },
+      "dyn-4k": {
+        "bytes": 30269,
+        "decoder_stream": 1409
+      },
+      "dyn-16k": {
+        "bytes": 30170,
+        "decoder_stream": 1409
+      },
+      "dyn-64k": {
+        "bytes": 30171,
+        "decoder_stream": 1409
+      }
+    },
+    {
+      "workload": "gRPC unary calls: responses+trailers",
+      "file": "grpc-resp.qif",
+      "lists": 1000,
+      "dotnet": {
+        "bytes": 62000,
+        "decoder_stream": 0
+      },
+      "static+huff": {
+        "bytes": 48000,
+        "decoder_stream": 0
+      },
+      "dyn-4k": {
+        "bytes": 6954,
+        "decoder_stream": 2925
+      },
+      "dyn-16k": {
+        "bytes": 6954,
+        "decoder_stream": 2925
+      },
+      "dyn-64k": {
+        "bytes": 6955,
+        "decoder_stream": 2925
+      }
+    },
+    {
+      "workload": "REST/JSON API: requests",
+      "file": "rest-req.qif",
+      "lists": 500,
+      "dotnet": {
+        "bytes": 697612,
+        "decoder_stream": 0
+      },
+      "static+huff": {
+        "bytes": 548959,
+        "decoder_stream": 0
+      },
+      "dyn-4k": {
+        "bytes": 39148,
+        "decoder_stream": 1404
+      },
+      "dyn-16k": {
+        "bytes": 39153,
+        "decoder_stream": 1405
+      },
+      "dyn-64k": {
+        "bytes": 39159,
+        "decoder_stream": 1406
+      }
+    },
+    {
+      "workload": "REST/JSON API: responses",
+      "file": "rest-resp.qif",
+      "lists": 500,
+      "dotnet": {
+        "bytes": 76791,
+        "decoder_stream": 0
+      },
+      "static+huff": {
+        "bytes": 58663,
+        "decoder_stream": 0
+      },
+      "dyn-4k": {
+        "bytes": 8501,
+        "decoder_stream": 1427
+      },
+      "dyn-16k": {
+        "bytes": 8511,
+        "decoder_stream": 1429
+      },
+      "dyn-64k": {
+        "bytes": 8542,
+        "decoder_stream": 1435
+      }
+    }
+  ]
+}
