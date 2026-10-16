@@ -132,6 +132,51 @@ which is less than Huffman alone. Responses and browser traffic don't depend on 
 2. **Copying literals char by char** instead of with the vectorized `Ascii.FromUtf16` that `QPackEncoder` uses added
    ~300 ns per 1 KB literal.
 
+## Does it make requests faster? (`netem/`)
+
+Kestrel and HttpClient over real HTTP/3 (msquic) on GitHub Actions Ubuntu 24.04, with the loopback shaped by
+`tc netem` (`netem/run.sh`, workflow `netem-latency`). Each variant sends header blocks of exactly the size that
+encoding produces, padded with an `x-h` header and sized with the validated ".NET today" model. So this measures the
+time effect of header *size* on the real stack; compression CPU is negligible (see above).
+
+- **Cold bursts** use the first 50/100 header lists of a connection, all sent before any acknowledgement can return.
+  - In **safe mode** nothing can be referenced yet, so it gains nothing (`.NET today` 443/799 B vs safe 437/809 B per
+    page request/response).
+  - With **blocking allowed** (ls-qpack, 100 blocked streams, as Chrome permits; Firefox allows 20) the entries inserted
+    earlier in the burst are referenced at once: 124/175 B. These ls-qpack sizes include Huffman, so they are slightly
+    optimistic for a no-Huffman .NET encoder.
+
+Median of 10 bursts or 100 sequential calls ([run 38878023353](../../actions/runs/38878023353); raw tables in
+`netem/results-2026-10-16-run-38878023353.md`):
+
+| Scenario | Variant | Wi-Fi 100 Mbit, 20 ms RTT | Mobile 10 Mbit, 50 ms | Poor 1 Mbit, 100 ms |
+|---|---|---:|---:|---:|
+| gRPC unary, sequential, warm | dynamic, auth not indexed | −0.4% | −0.5% | −2.2% |
+| | dynamic, auth indexed | −0.7% | −2.2% | −10.2% |
+| gRPC fan-out ×50, warm | dynamic, auth not indexed | −3.3% | −6.0% | −10.8% |
+| | dynamic, auth indexed | −17.7% (28.6 → 23.6 ms) | −45.6% (125 → 68 ms) | −67.1% (879 → 289 ms) |
+| gRPC fan-out ×50, new connection | dynamic, safe mode | +1.0% | +0.3% | +1.6% |
+| | dynamic, blocking allowed | −44.7% (94.5 → 52.2 ms) | −35.8% (251 → 161 ms) | −56.3% (1,109 → 484 ms) |
+| Page load ×100, new connection | dynamic, safe mode | −0.2% | +0.8% | +0.4% |
+| | dynamic, blocking allowed | −29.6% (128 → 90 ms) | −32.6% (336 → 226 ms) | −51.4% (1,607 → 780 ms) |
+
+**Reading:**
+- **Single requests barely change.** One round trip dominates and 1.4 KB is a few packets at most. That's the 0.5–10%
+  in the first rows.
+- **Bursts change a lot.** The gains are larger than the bytes alone explain: on Wi-Fi, 70 KB fewer is ~6 ms of
+  transmission, yet the gRPC cold burst is 42 ms faster. QUIC's congestion window starts at ~12 KB and grows per round
+  trip, so fewer header bytes means fewer round trips before everything is sent.
+- **Safe mode is useless at connection start.** The win on new connections needs a blocking-capable encoder: allow
+  references to entries inserted earlier in the same burst, within the peer's advertised blocked-streams budget.
+  Chrome advertises 100 and Firefox 20, so Kestrel encoding responses for browsers can use it. On warm connections
+  safe mode works.
+- **Without indexing `authorization`, API bursts gain only 3–11%.** The token policy question again.
+- **Caveats:**
+  - netem on loopback shares one rate limit across both directions, which is harsher than a real asymmetric link but
+    the same for every variant.
+  - Header sizes are emulated by padding rather than produced by a real dynamic-table encoder in Kestrel/HttpClient.
+  - One run on one machine type.
+
 ## How other QPACK implementations do it
 
 Read from source on 2026-10-16, default branches:
@@ -166,7 +211,7 @@ Read from source on 2026-10-16, default branches:
 - **Not shown yet:**
   - **Decoder CPU for the dynamic table** (Kestrel accepting browser compression).
   - **x64 numbers.** Everything ran on an Apple M4.
-  - **Real HttpClient/Kestrel integration**, as opposed to this standalone encoder.
+  - **Real HttpClient/Kestrel integration**, as opposed to this standalone encoder (the netem test emulates sizes).
   - **Share of total traffic.** Small gRPC messages are dominated by headers; downloads are not.
 - **Approximations:**
   - Any header whose name is in the static table gets a name reference in the ".NET today" model. Real HttpClient and
@@ -184,4 +229,5 @@ dotnet build dotnet -o build/dotnet
 .venv/bin/python measure.py --blocked-streams 0 --ack-delay 10
 dotnet run -c Release --project bench -- --filter '*HeaderEncoding*'
 dotnet run -c Release --project bench -- --filter '*DynamicTable*'
+netem/run.sh   # Linux with libmsquic and sudo; or run the netem-latency workflow
 ```
