@@ -20,6 +20,9 @@
     <Compile Include="../dotnet/HuffmanString.cs" />
     <Compile Include="../dotnet/Qif.cs" />
     <Compile Include="../dotnet/Shims.cs" />
+    <Compile Include="../dotnet/StaticLookup.cs" />
+    <Compile Include="../dotnet/QPackWire.cs" />
+    <Compile Include="../dotnet/DynamicTableEncoder.cs" />
     <Compile Include="../dotnet-src/QPackEncoder.cs" />
     <Compile Include="../dotnet-src/QPackEncodingException.cs" />
     <Compile Include="../dotnet-src/H3StaticTable.cs" />

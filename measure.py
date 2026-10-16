@@ -5,6 +5,8 @@ Every QIF file is treated as one connection, in order. Variants:
   dotnet+huff    the same .NET encoding with Huffman-coded literals (dotnet/DotnetStyleEncoder.cs)
   static+huff    ls-qpack with dynamic table capacity 0: static table + Huffman only
   dyn-4k/16k/64k ls-qpack with a dynamic table of that capacity
+  .NET dyn-16k   our minimal .NET dynamic-table encoder, no Huffman, never indexes authorization/short cookies
+  .NET 16k+auth  the same, but indexing authorization too (as QUICHE and ls-qpack do)
 
 Counted bytes = header blocks + encoder-stream instructions (same direction). Decoder-stream bytes
 (acknowledgements flowing back) are reported separately. HEADERS frame envelopes are excluded for all
@@ -33,6 +35,8 @@ WORKLOADS = [
     ("REST/JSON API: responses", "rest-resp.qif"),
 ]
 CAPACITIES = {"static+huff": 0, "dyn-4k": 4096, "dyn-16k": 16384, "dyn-64k": 65536}
+# (capacity, index authorization/short cookies too?) - default never indexes them (dotnet/DynamicTableEncoder.cs)
+DOTNET_DYNAMIC = {".NET dyn-16k": (16384, False), ".NET 16k+auth": (16384, True)}
 
 
 def read_qif(path):
@@ -71,6 +75,26 @@ def measure_dotnet(path, blocks, huffman=False):
         assert decoded == expected, "baseline bytes do not decode back to the input"
         total += len(data)
     return {"bytes": total, "decoder_stream": 0}
+
+
+def measure_dotnet_dynamic(path, blocks, capacity, ack_delay, index_sensitive=False):
+    """Our .NET DynamicTableEncoder (safe mode), checked by ls-qpack's decoder with blocked_streams=0."""
+    command = ["dotnet", DOTNET_DLL, "--dynamic", str(capacity), "--ack-delay", str(ack_delay)]
+    command += (["--index-sensitive"] if index_sensitive else []) + [path]
+    lines = subprocess.run(command, check=True, capture_output=True, text=True).stdout.splitlines()
+    assert len(lines) == len(blocks), "dynamic encoder produced a different number of header blocks"
+    decoder = pylsqpack.Decoder(capacity, 0)
+    sent = 0
+    for sid, line, expected in zip(stream_ids(len(blocks)), lines, blocks):
+        encoder_hex, block_hex = line.split()
+        enc = b"" if encoder_hex == "-" else bytes.fromhex(encoder_hex)
+        block = bytes.fromhex(block_hex)
+        if enc:
+            assert not decoder.feed_encoder(enc), "no stream should be blocked"
+        _, decoded = decoder.feed_header(sid, block)  # raises if a reference is invalid
+        assert decoded == expected, ".NET dynamic encoder round trip mismatch"
+        sent += len(enc) + len(block)
+    return {"bytes": sent, "decoder_stream": None}
 
 
 def measure_lsqpack(blocks, capacity, blocked_streams, ack_delay):
@@ -118,7 +142,7 @@ def main():
     args = parser.parse_args()
 
     results = []
-    header = f"{'workload':<38}{'lists':>6}{'.NET today':>12}{'.NET+huff':>14}" + "".join(f"{k:>14}" for k in CAPACITIES)
+    header = f"{'workload':<38}{'lists':>6}{'.NET today':>12}{'.NET+huff':>14}" + "".join(f"{k:>14}" for k in CAPACITIES) + "".join(f"{k:>14}" for k in DOTNET_DYNAMIC)
     print(f"blocked_streams={args.blocked_streams} ack_delay={args.ack_delay}  (bytes per header list, % saved vs .NET today)")
     print(header)
     print("-" * len(header))
@@ -129,11 +153,13 @@ def main():
                "dotnet+huff": measure_dotnet(path, blocks, huffman=True)}
         for name, capacity in CAPACITIES.items():
             row[name] = measure_lsqpack(blocks, capacity, args.blocked_streams, args.ack_delay)
+        for name, (capacity, index_sensitive) in DOTNET_DYNAMIC.items():
+            row[name] = measure_dotnet_dynamic(path, blocks, capacity, args.ack_delay, index_sensitive)
         results.append(row)
 
         base = row["dotnet"]["bytes"]
         cells = "".join(
-            f"{row[k]['bytes'] / len(blocks):>7.0f} ({1 - row[k]['bytes'] / base:>4.0%})" for k in CAPACITIES)
+            f"{row[k]['bytes'] / len(blocks):>7.0f} ({1 - row[k]['bytes'] / base:>4.0%})" for k in list(CAPACITIES) + list(DOTNET_DYNAMIC))
         huff = row["dotnet+huff"]["bytes"]
         huff_cell = f"{huff / len(blocks):>7.0f} ({1 - huff / base:>4.0%})"
         print(f"{label:<38}{len(blocks):>6}{base / len(blocks):>12.0f}{huff_cell}{cells}")

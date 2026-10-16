@@ -10,15 +10,34 @@ using System.Net.Http.QPack;
 // Approximation (favours .NET slightly): any header whose name is in the static table gets a static
 // name reference, although HttpClient/Kestrel only do that for headers in their known-header lists.
 
+// --dynamic <capacity> [--ack-delay <n>] [--index-sensitive]: DynamicTableEncoder;
+// prints "<encoder-stream hex|-> <block hex>" per header list.
+var file = args[^1];
+if (args.Length >= 3 && args[0] == "--dynamic")
+{
+    var capacity = int.Parse(args[1]);
+    var ackDelayAt = Array.IndexOf(args, "--ack-delay");
+    var ackDelay = ackDelayAt > 0 ? int.Parse(args[ackDelayAt + 1]) : 0;
+    var dynamic = new DynamicTableEncoder(capacity, ackDelay, indexSensitive: args.Contains("--index-sensitive"));
+    foreach (var headers in Qif.Read(file))
+    {
+        var (encoderLength, blockLength) = dynamic.Encode(headers);
+        var encoderHex = encoderLength == 0 ? "-" : Convert.ToHexString(dynamic.EncoderStream[..encoderLength]);
+        Console.WriteLine($"{encoderHex} {Convert.ToHexString(dynamic.Block[..blockLength])}");
+    }
+
+    return 0;
+}
+
 var huffman = args.Length == 2 && args[0] == "--huffman";
 if (args.Length != (huffman ? 2 : 1))
 {
-    Console.Error.WriteLine("usage: DotnetBaseline [--huffman] <file.qif>");
+    Console.Error.WriteLine("usage: DotnetBaseline [--huffman | --dynamic <capacity> [--ack-delay <n>]] <file.qif>");
     return 1;
 }
 
 var encoder = new DotnetStyleEncoder(huffman);
-foreach (var headers in Qif.Read(args[^1]))
+foreach (var headers in Qif.Read(file))
 {
     Console.WriteLine(Convert.ToHexString(encoder.Encode(headers)));
 }

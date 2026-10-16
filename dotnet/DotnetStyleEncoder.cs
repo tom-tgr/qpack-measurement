@@ -6,21 +6,12 @@ using System.Net.Http.QPack;
 public sealed class DotnetStyleEncoder
 {
     private readonly bool _huffman;
-    private readonly Dictionary<string, int> _firstNameIndex = new();
-    private readonly Dictionary<(string, string), int> _exactIndex = new();
+    private readonly StaticLookup _static = StaticLookup.Instance;
     private readonly byte[] _buffer = new byte[1 << 20];
 
     public DotnetStyleEncoder(bool huffman = false)
     {
         _huffman = huffman;
-        for (var i = 0; i < H3StaticTable.Count; i++)
-        {
-            var field = H3StaticTable.Get(i);
-            var name = System.Text.Encoding.ASCII.GetString(field.Name);
-            var value = System.Text.Encoding.ASCII.GetString(field.Value);
-            _firstNameIndex.TryAdd(name, i);
-            _exactIndex.TryAdd((name, value), i);
-        }
     }
 
     public byte[] Encode(List<(string Name, string Value)> headers) => _buffer[..EncodeInto(headers)];
@@ -50,9 +41,9 @@ public sealed class DotnetStyleEncoder
             case ":method":
             case ":scheme":
                 // HttpMethod.Http3EncodedBytes / SchemeHttps: indexed when the exact value is in the table.
-                return _exactIndex.TryGetValue((name, value), out var exact)
+                return _static.TryGetExact(name, value, out var exact)
                     ? Indexed(exact, offset)
-                    : NameReference(_firstNameIndex[name], value, offset);
+                    : NameReference(StaticNameIndex(name), value, offset);
             case ":path":
                 return value == "/" ? Indexed(H3StaticTable.PathSlash, offset) : NameReference(H3StaticTable.PathSlash, value, offset);
             case ":authority":
@@ -62,7 +53,7 @@ public sealed class DotnetStyleEncoder
         }
 
         // Known headers carry a pre-encoded static name reference; the value is always a literal.
-        return !name.StartsWith(':') && _firstNameIndex.TryGetValue(name, out var nameIndex)
+        return !name.StartsWith(':') && _static.TryGetName(name, out var nameIndex)
             ? NameReference(nameIndex, value, offset)
             : Literal(name, value, offset);
     }
@@ -76,12 +67,12 @@ public sealed class DotnetStyleEncoder
                 : NameReference(H3StaticTable.Status200, value, offset);
         }
 
-        if (_exactIndex.TryGetValue((name, value), out var exact))
+        if (_static.TryGetExact(name, value, out var exact))
         {
             return Indexed(exact, offset);
         }
 
-        return _firstNameIndex.TryGetValue(name, out var nameIndex)
+        return _static.TryGetName(name, out var nameIndex)
             ? NameReference(nameIndex, value, offset)
             : Literal(name, value, offset);
     }
@@ -144,6 +135,8 @@ public sealed class DotnetStyleEncoder
 
         return prefix + length;
     }
+
+    private int StaticNameIndex(string name) => _static.TryGetName(name, out var index) ? index : throw new InvalidOperationException(name);
 
     private static void Check(bool ok)
     {

@@ -32,6 +32,14 @@
       "dyn-64k": {
         "bytes": 58084,
         "decoder_stream": 1097
+      },
+      ".NET dyn-16k": {
+        "bytes": 77655,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 76380,
+        "decoder_stream": null
       }
     },
     {
@@ -61,6 +69,14 @@
       "dyn-64k": {
         "bytes": 63506,
         "decoder_stream": 1107
+      },
+      ".NET dyn-16k": {
+        "bytes": 81427,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 81427,
+        "decoder_stream": null
       }
     },
     {
@@ -90,6 +106,14 @@
       "dyn-64k": {
         "bytes": 2602,
         "decoder_stream": 8
+      },
+      ".NET dyn-16k": {
+        "bytes": 3289,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 3289,
+        "decoder_stream": null
       }
     },
     {
@@ -119,6 +143,14 @@
       "dyn-64k": {
         "bytes": 42172,
         "decoder_stream": 1406
+      },
+      ".NET dyn-16k": {
+        "bytes": 653167,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 59515,
+        "decoder_stream": null
       }
     },
     {
@@ -148,6 +180,14 @@
       "dyn-64k": {
         "bytes": 10145,
         "decoder_stream": 2915
+      },
+      ".NET dyn-16k": {
+        "bytes": 11701,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 11701,
+        "decoder_stream": null
       }
     },
     {
@@ -177,6 +217,14 @@
       "dyn-64k": {
         "bytes": 49631,
         "decoder_stream": 1406
+      },
+      ".NET dyn-16k": {
+        "bytes": 664374,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 70722,
+        "decoder_stream": null
       }
     },
     {
@@ -206,6 +254,14 @@
       "dyn-64k": {
         "bytes": 15116,
         "decoder_stream": 1425
+      },
+      ".NET dyn-16k": {
+        "bytes": 18184,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 18184,
+        "decoder_stream": null
       }
     }
   ]

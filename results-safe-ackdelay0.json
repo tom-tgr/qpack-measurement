@@ -13,6 +13,10 @@
         "bytes": 195668,
         "decoder_stream": 0
       },
+      "dotnet+huff": {
+        "bytes": 153239,
+        "decoder_stream": 0
+      },
       "static+huff": {
         "bytes": 145888,
         "decoder_stream": 0
@@ -28,6 +32,14 @@
       "dyn-64k": {
         "bytes": 52920,
         "decoder_stream": 1107
+      },
+      ".NET dyn-16k": {
+        "bytes": 71281,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 69918,
+        "decoder_stream": null
       }
     },
     {
@@ -36,6 +48,10 @@
       "lists": 383,
       "dotnet": {
         "bytes": 285267,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 215590,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -53,6 +69,14 @@
       "dyn-64k": {
         "bytes": 55269,
         "decoder_stream": 1112
+      },
+      ".NET dyn-16k": {
+        "bytes": 68762,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 68762,
+        "decoder_stream": null
       }
     },
     {
@@ -61,6 +85,10 @@
       "lists": 18,
       "dotnet": {
         "bytes": 4416,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 3499,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -78,6 +106,14 @@
       "dyn-64k": {
         "bytes": 1152,
         "decoder_stream": 18
+      },
+      ".NET dyn-16k": {
+        "bytes": 1429,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 1429,
+        "decoder_stream": null
       }
     },
     {
@@ -86,6 +122,10 @@
       "lists": 500,
       "dotnet": {
         "bytes": 751182,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 591237,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -103,6 +143,14 @@
       "dyn-64k": {
         "bytes": 30171,
         "decoder_stream": 1409
+      },
+      ".NET dyn-16k": {
+        "bytes": 650980,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 45138,
+        "decoder_stream": null
       }
     },
     {
@@ -111,6 +159,10 @@
       "lists": 1000,
       "dotnet": {
         "bytes": 62000,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 48000,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -128,6 +180,14 @@
       "dyn-64k": {
         "bytes": 6955,
         "decoder_stream": 2925
+      },
+      ".NET dyn-16k": {
+        "bytes": 7531,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 7531,
+        "decoder_stream": null
       }
     },
     {
@@ -136,6 +196,10 @@
       "lists": 500,
       "dotnet": {
         "bytes": 697612,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 548959,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -153,6 +217,14 @@
       "dyn-64k": {
         "bytes": 39159,
         "decoder_stream": 1406
+      },
+      ".NET dyn-16k": {
+        "bytes": 663570,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 57728,
+        "decoder_stream": null
       }
     },
     {
@@ -161,6 +233,10 @@
       "lists": 500,
       "dotnet": {
         "bytes": 76791,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 58663,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -178,6 +254,14 @@
       "dyn-64k": {
         "bytes": 8542,
         "decoder_stream": 1435
+      },
+      ".NET dyn-16k": {
+        "bytes": 9574,
+        "decoder_stream": null
+      },
+      ".NET 16k+auth": {
+        "bytes": 9574,
+        "decoder_stream": null
       }
     }
   ]
