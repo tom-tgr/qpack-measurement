@@ -18,6 +18,8 @@
     <Compile Include="../dotnet-src/H3StaticTable.Http3.cs" />
     <Compile Include="../dotnet-src/HeaderField.cs" />
     <Compile Include="../dotnet-src/IntegerEncoder.cs" />
+    <Compile Include="../dotnet-src/Huffman.cs" />
+    <Compile Include="../dotnet-src/HuffmanDecodingException.cs" />
   </ItemGroup>
 
 </Project>

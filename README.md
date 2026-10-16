@@ -57,12 +57,47 @@ measurable value"*. This repo measures the header-byte part of that value.
 With instant acknowledgements, or with blocking allowed (`--blocked-streams 16`), the dynamic numbers are a few
 points better. All runs are in `results-*.json`.
 
+The `.NET+huff` column in `measure.py` output is .NET's own encoding with Huffman added
+(`dotnet/DotnetStyleEncoder.cs`, `huffman: true`). It decodes correctly and matches ls-qpack's Huffman-only size exactly
+for gRPC/REST (21–24% saved).
+
+## CPU cost of Huffman (`bench/`)
+
+BenchmarkDotNet, Apple M4, .NET 10.0.0, Arm64. Time per header list. The encoder uses .NET's own code table, and the
+decoder is .NET's existing `Huffman.Decode`. Full reports are in `bench/results/`.
+
+| Workload | Encode today | Encode with Huffman | Added | Bytes saved | Huffman decode at the receiver |
+|---|---:|---:|---:|---:|---:|
+| gRPC request | 201 ns | 1,954 ns | **+1.75 µs** | 320 B | 3.61 µs |
+| REST request | 162 ns | 2,120 ns | **+1.96 µs** | 297 B | 3.48 µs |
+| Facebook request | 153 ns | 705 ns | +0.55 µs | 111 B | 0.95 µs |
+| Facebook response | 224 ns | 1,216 ns | +0.99 µs | 182 B | 1.73 µs |
+
+No allocations in any variant.
+
+**Encryption context** (`EncryptionContextBenchmarks`): encrypting 1,502 vs 1,182 bytes with `AesGcm` differs by
+**~13 ns** (1.955 vs 1.942 µs). On macOS `AesGcm` has a large fixed per-call cost (CryptoKit), so only the difference
+matters: the CPU saved by sending 320 fewer bytes is tiny next to the ~1.75 µs that Huffman adds.
+
+**Reading:**
+- Huffman costs CPU on both sides: about 1.7–2 µs to encode and 3.5 µs to decode a typical API request, to save
+  about 300 bytes. Locally that's a net CPU loss. The only gain is fewer bytes on the wire, which helps on slow or
+  metered links and when headers cross a packet boundary.
+- This matches the team's HPACK experience ("too CPU intensive") and is an argument *against* doing Huffman first.
+- A .NET server already pays the decode cost for browser traffic, because browsers Huffman-code their headers.
+  HttpClient → Kestrel traffic currently avoids it.
+- The encoder is the straightforward loop (a length pre-pass plus one table lookup per character, ~1.3 ns/byte).
+  A tuned version could be faster, but it is unlikely to close a 100× gap with the encryption saving.
+- This points to the **dynamic table** as the real opportunity. A repeated 1 KB token becomes a 1–2 byte index,
+  which is cheaper to encode than copying the token and needs no Huffman. Its CPU cost (table lookups, insert
+  bookkeeping) is the next thing to measure.
+
 ## What this does and doesn't show
 
 - **Shown:** header bytes drop by 21–26% from Huffman alone, which needs no state, no new streams, and no blocking.
   A dynamic table cuts them by 57–96%, even in safe mode. The biggest wins are API traffic with repeated tokens.
 - **Not shown yet:**
-  - **CPU cost.** This was the team's concern for HPACK. It needs a benchmark of a .NET implementation.
+  - **CPU cost of the dynamic table.** Huffman's CPU cost is measured above; the dynamic table's isn't yet.
   - **Share of total traffic.** For a 200-byte gRPC message, 1.5 KB of headers is most of the request. For a 1 MB download it's noise.
   - **Peer support.** .NET only gains on a connection if the peer advertises a dynamic table (for requests), and .NET has to advertise one to benefit on responses.
 - **Approximations:**
@@ -77,4 +112,5 @@ python3 -m venv .venv && .venv/bin/pip install pylsqpack==0.3.22
 dotnet build dotnet -o build/dotnet
 .venv/bin/python gen_synthetic.py
 .venv/bin/python measure.py --blocked-streams 0 --ack-delay 10
+dotnet run -c Release --project bench -- --filter '*HeaderEncoding*'
 ```

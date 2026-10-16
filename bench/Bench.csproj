@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- CPU cost of Huffman-coding HTTP/3 header literals, using the same encoder as ../dotnet. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <NoWarn>$(NoWarn);CS8632;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../dotnet/DotnetStyleEncoder.cs" />
+    <Compile Include="../dotnet/HuffmanString.cs" />
+    <Compile Include="../dotnet/Qif.cs" />
+    <Compile Include="../dotnet/Shims.cs" />
+    <Compile Include="../dotnet-src/QPackEncoder.cs" />
+    <Compile Include="../dotnet-src/QPackEncodingException.cs" />
+    <Compile Include="../dotnet-src/H3StaticTable.cs" />
+    <Compile Include="../dotnet-src/H3StaticTable.Http3.cs" />
+    <Compile Include="../dotnet-src/HeaderField.cs" />
+    <Compile Include="../dotnet-src/IntegerEncoder.cs" />
+    <Compile Include="../dotnet-src/Huffman.cs" />
+    <Compile Include="../dotnet-src/HuffmanDecodingException.cs" />
+  </ItemGroup>
+
+</Project>

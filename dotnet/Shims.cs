@@ -11,4 +11,5 @@ internal static class Obsoletions
 internal static class SR
 {
     public const string net_http_request_invalid_char_encoding = "Request headers must contain only ASCII characters.";
+    public const string net_http_hpack_huffman_decode_failed = "Huffman-coded literal string failed to decode.";
 }

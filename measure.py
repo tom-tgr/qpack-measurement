@@ -2,6 +2,7 @@
 
 Every QIF file is treated as one connection, in order. Variants:
   dotnet         .NET today: static table only, no Huffman (real .NET encoder, see dotnet/Program.cs)
+  dotnet+huff    the same .NET encoding with Huffman-coded literals (dotnet/DotnetStyleEncoder.cs)
   static+huff    ls-qpack with dynamic table capacity 0: static table + Huffman only
   dyn-4k/16k/64k ls-qpack with a dynamic table of that capacity
 
@@ -58,8 +59,9 @@ def stream_ids(count):
     return [4 * i for i in range(count)]
 
 
-def measure_dotnet(path, blocks):
-    out = subprocess.run(["dotnet", DOTNET_DLL, path], check=True, capture_output=True, text=True).stdout.split()
+def measure_dotnet(path, blocks, huffman=False):
+    command = ["dotnet", DOTNET_DLL] + (["--huffman"] if huffman else []) + [path]
+    out = subprocess.run(command, check=True, capture_output=True, text=True).stdout.split()
     assert len(out) == len(blocks), "baseline produced a different number of header blocks"
     decoder = pylsqpack.Decoder(0, 0)
     total = 0
@@ -116,14 +118,15 @@ def main():
     args = parser.parse_args()
 
     results = []
-    header = f"{'workload':<38}{'lists':>6}{'.NET today':>12}" + "".join(f"{k:>14}" for k in CAPACITIES)
+    header = f"{'workload':<38}{'lists':>6}{'.NET today':>12}{'.NET+huff':>14}" + "".join(f"{k:>14}" for k in CAPACITIES)
     print(f"blocked_streams={args.blocked_streams} ack_delay={args.ack_delay}  (bytes per header list, % saved vs .NET today)")
     print(header)
     print("-" * len(header))
     for label, file in WORKLOADS:
         path = os.path.join(ROOT, "corpus", file)
         blocks = read_qif(path)
-        row = {"workload": label, "file": file, "lists": len(blocks), "dotnet": measure_dotnet(path, blocks)}
+        row = {"workload": label, "file": file, "lists": len(blocks), "dotnet": measure_dotnet(path, blocks),
+               "dotnet+huff": measure_dotnet(path, blocks, huffman=True)}
         for name, capacity in CAPACITIES.items():
             row[name] = measure_lsqpack(blocks, capacity, args.blocked_streams, args.ack_delay)
         results.append(row)
@@ -131,7 +134,9 @@ def main():
         base = row["dotnet"]["bytes"]
         cells = "".join(
             f"{row[k]['bytes'] / len(blocks):>7.0f} ({1 - row[k]['bytes'] / base:>4.0%})" for k in CAPACITIES)
-        print(f"{label:<38}{len(blocks):>6}{base / len(blocks):>12.0f}{cells}")
+        huff = row["dotnet+huff"]["bytes"]
+        huff_cell = f"{huff / len(blocks):>7.0f} ({1 - huff / base:>4.0%})"
+        print(f"{label:<38}{len(blocks):>6}{base / len(blocks):>12.0f}{huff_cell}{cells}")
 
     if args.json:
         with open(args.json, "w") as f:

@@ -13,6 +13,10 @@
         "bytes": 195668,
         "decoder_stream": 0
       },
+      "dotnet+huff": {
+        "bytes": 153239,
+        "decoder_stream": 0
+      },
       "static+huff": {
         "bytes": 145888,
         "decoder_stream": 0
@@ -36,6 +40,10 @@
       "lists": 383,
       "dotnet": {
         "bytes": 285267,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 215590,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -63,6 +71,10 @@
         "bytes": 4416,
         "decoder_stream": 0
       },
+      "dotnet+huff": {
+        "bytes": 3499,
+        "decoder_stream": 0
+      },
       "static+huff": {
         "bytes": 3258,
         "decoder_stream": 0
@@ -86,6 +98,10 @@
       "lists": 500,
       "dotnet": {
         "bytes": 751182,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 591237,
         "decoder_stream": 0
       },
       "static+huff": {
@@ -113,6 +129,10 @@
         "bytes": 62000,
         "decoder_stream": 0
       },
+      "dotnet+huff": {
+        "bytes": 48000,
+        "decoder_stream": 0
+      },
       "static+huff": {
         "bytes": 48000,
         "decoder_stream": 0
@@ -138,6 +158,10 @@
         "bytes": 697612,
         "decoder_stream": 0
       },
+      "dotnet+huff": {
+        "bytes": 548959,
+        "decoder_stream": 0
+      },
       "static+huff": {
         "bytes": 548959,
         "decoder_stream": 0
@@ -161,6 +185,10 @@
       "lists": 500,
       "dotnet": {
         "bytes": 76791,
+        "decoder_stream": 0
+      },
+      "dotnet+huff": {
+        "bytes": 58663,
         "decoder_stream": 0
       },
       "static+huff": {
