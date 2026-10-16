@@ -35,7 +35,7 @@ foreach (var group in results.GroupBy(r => r.Scenario))
     foreach (var r in group)
     {
         var delta = r.MedianMs - today;
-        var deltaText = r == group.First() ? "" : $"{delta:+0.00;-0.00;0.00} ms ({delta / today:+0.0%;-0.0%;0.0%})";
+        var deltaText = r == group.First() ? "baseline" : $"{delta:+0.00;-0.00;0.00} ms ({delta / today:+0.0%;-0.0%;0.0%})";
         var response = r.ResponseBytes == 0 ? "~74" : r.ResponseBytes.ToString();
         lines.Add($"| {r.Scenario} | {r.Variant} | {r.RequestBytes} | {response} | {r.MedianMs:0.00} | {r.P90Ms:0.00} | {deltaText} |");
     }

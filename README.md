@@ -101,7 +101,7 @@ About 270 lines, no Huffman, safe mode only (references acknowledged entries onl
 
 Every block is checked by ls-qpack's decoder with `blocked_streams=0`.
 
-**Bytes** (safe mode, acknowledgements 10 requests late, 16 KB table):
+**Bytes** (safe mode, 16 KB table, acknowledgement of each new entry delayed until 10 more requests were sent, about one round trip with ~10 requests in flight):
 
 | Workload | .NET today | Dynamic, auth never indexed | Dynamic, auth indexed |
 |---|---:|---:|---:|
@@ -152,13 +152,13 @@ Median of 10 bursts or 100 sequential calls ([run 38878023353](../../actions/run
 | Scenario | Variant | Wi-Fi 100 Mbit, 20 ms RTT | Mobile 10 Mbit, 50 ms | Poor 1 Mbit, 100 ms |
 |---|---|---:|---:|---:|
 | gRPC unary, sequential, warm | dynamic, auth not indexed | −0.4% | −0.5% | −2.2% |
-| | dynamic, auth indexed | −0.7% | −2.2% | −10.2% |
+| gRPC unary, sequential, warm | dynamic, auth indexed | −0.7% | −2.2% | −10.2% |
 | gRPC fan-out ×50, warm | dynamic, auth not indexed | −3.3% | −6.0% | −10.8% |
-| | dynamic, auth indexed | −17.7% (28.6 → 23.6 ms) | −45.6% (125 → 68 ms) | −67.1% (879 → 289 ms) |
+| gRPC fan-out ×50, warm | dynamic, auth indexed | −17.7% (28.6 → 23.6 ms) | −45.6% (125 → 68 ms) | −67.1% (879 → 289 ms) |
 | gRPC fan-out ×50, new connection | dynamic, safe mode | +1.0% | +0.3% | +1.6% |
-| | dynamic, blocking allowed | −44.7% (94.5 → 52.2 ms) | −35.8% (251 → 161 ms) | −56.3% (1,109 → 484 ms) |
+| gRPC fan-out ×50, new connection | dynamic, blocking allowed | −44.7% (94.5 → 52.2 ms) | −35.8% (251 → 161 ms) | −56.3% (1,109 → 484 ms) |
 | Page load ×100, new connection | dynamic, safe mode | −0.2% | +0.8% | +0.4% |
-| | dynamic, blocking allowed | −29.6% (128 → 90 ms) | −32.6% (336 → 226 ms) | −51.4% (1,607 → 780 ms) |
+| Page load ×100, new connection | dynamic, blocking allowed | −29.6% (128 → 90 ms) | −32.6% (336 → 226 ms) | −51.4% (1,607 → 780 ms) |
 
 **Reading:**
 - **Single requests barely change.** One round trip dominates and 1.4 KB is a few packets at most. That's the 0.5–10%
