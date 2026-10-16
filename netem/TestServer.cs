@@ -14,6 +14,11 @@ public static class TestServer
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        if (http3)
+        {
+            builder.WebHost.UseQuic(); // the slim builder leaves the QUIC transport out
+        }
+
         builder.WebHost.ConfigureKestrel(kestrel =>
         {
             kestrel.AddServerHeader = true;
