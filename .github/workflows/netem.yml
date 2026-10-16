@@ -1,0 +1,34 @@
+# Wall-clock effect of HTTP/3 header size under shaped networks (netem/README section in ../README.md).
+name: netem-latency
+
+on:
+  workflow_dispatch:
+  push:
+    paths: ["netem/**", "dotnet/**", ".github/workflows/netem.yml"]
+
+jobs:
+  latency:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Install libmsquic (HTTP/3 on Linux) and netem
+        run: |
+          wget -q https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update -q
+          sudo apt-get install -y -q libmsquic
+          sudo modprobe sch_netem || (sudo apt-get install -y -q "linux-modules-extra-$(uname -r)" && sudo modprobe sch_netem)
+      - name: Run latency profiles
+        run: netem/run.sh results-netem.md
+      - name: Publish summary
+        if: always()
+        run: cat results-netem.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: netem-results
+          path: results-netem.md
